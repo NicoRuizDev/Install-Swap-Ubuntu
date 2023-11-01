@@ -7,21 +7,47 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # Ask for confirmation
-read -p "This script will reset your iptables rules to default and save them to ~/iptables-rules. Do you want to continue? (y/n): " confirm
+read -p "This script will create a systemd service to reset iptables rules on boot. Do you want to proceed? (y/n): " confirm
 
 if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
   echo "Aborting script."
   exit 1
 fi
 
-# Reset iptables rules and save to ~/iptables-rules
+# Create the script file
+cat <<EOL > /root/iptables-reset.sh
+#!/bin/bash
+
+# Reset iptables rules to allow all traffic
 iptables -P INPUT ACCEPT
 iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -F
-sudo iptables-save > ~/iptables-rules
+EOL
 
-echo "Successfully done."
+# Make the script executable
+chmod +x /root/iptables-reset.sh
 
-# Promote your GitHub repo
-echo "Check out my GitHub repository for more scripts and projects: https://github.com/NicoRuizDev"
+# Create the systemd service unit file
+cat <<EOL > /etc/systemd/system/iptables-reset.service
+[Unit]
+Description=Reset iptables rules on boot
+
+[Service]
+Type=oneshot
+ExecStart=/root/iptables-reset.sh
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Reload systemd and enable the service
+systemctl daemon-reload
+systemctl enable iptables-reset.service
+
+# Start the service
+systemctl start iptables-reset.service
+
+echo "Systemd service for resetting iptables rules on boot has been created and enabled."
+
+exit 0
