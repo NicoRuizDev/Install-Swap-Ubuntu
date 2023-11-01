@@ -1,6 +1,6 @@
 # 1. Open All Ports Script
 
-This script allows you to reset your iptables rules to accept all incoming and outgoing traffic on an Ubuntu system. It then saves the previous rules to a file and promotes the GitHub repository where the script is hosted.
+This script allows you to reset your iptables rules to accept all incoming and outgoing traffic on an Ubuntu system.
 
 ## One-Click Installation and Execution
 
